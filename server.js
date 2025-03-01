@@ -17,20 +17,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log('MongoDB Connected'));
 
-// Socket.io for real-time updates
 io.on('connection', (socket) => {
+  console.log('New client connected');
   socket.on('vote', (pollId) => {
-    socket.broadcast.emit('updatePoll', pollId);
+    socket.broadcast.emit('updatePoll', pollId); // Notify all other clients
   });
+  socket.on('disconnect', () => console.log('Client disconnected'));
 });
 
-app.use('/', pollRoutes);
+app.use('/', pollRoutes(io)); // Pass io to routes
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
