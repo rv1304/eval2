@@ -1,6 +1,6 @@
 <%- include('partials/header') %>
 <main class="container">
-    <h1><%= poll.title %></h1>
+    <h1>Hello</h1>
     <p>Sentiment: <%= poll.sentiment.score > 0 ? 'Positive' : 'Negative' %></p>
     <p>Ends: <%= poll.endTime.toLocaleString() %></p>
     <p>Time Left: <span id="timer"></span></p>
@@ -8,18 +8,17 @@
     
     <div class="poll-options">
         <% poll.options.forEach((opt, i) => { %>
-            <div>
+            <div class="option">
                 <button class="vote-btn" data-index="<%= i %>"><%= opt.text %></button>
-                <% if (isCreator) { %>
-                    (<span class="votes"><%= opt.votes %></span>)
-                <% } %>
+                <span class="votes">(<%= opt.votes %>)</span>
             </div>
         <% }) %>
     </div>
     
     <div class="poll-share">
+        <p>Share this poll:</p>
         <img src="<%= qrCode %>" alt="QR Code">
-        <p>Share URL: <input type="text" value="<%= shareUrl %>" readonly></p>
+        <input type="text" value="<%= shareUrl %>" readonly class="share-url">
     </div>
     
     <% if (isCreator) { %>
@@ -32,9 +31,7 @@
 <%- include('partials/footer') %>
 
 <script>
-  // Countdown timer
-  let timeLeft = <%= timeLeft %>; // Already in seconds from server
-  
+  let timeLeft = <%= timeLeft %>;
   const timerElement = document.getElementById('timer');
   
   function updateTimer() {
@@ -56,7 +53,6 @@
     document.querySelectorAll('.vote-btn').forEach(btn => btn.disabled = true);
   }
 
-  // Voting functionality
   document.querySelectorAll('.vote-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const index = btn.dataset.index;
@@ -70,12 +66,10 @@
       
       if (response.ok) {
         const data = await response.json();
-        if (document.querySelector('.votes')) { // Only update if creator
-          document.querySelectorAll('.votes').forEach((span, i) => {
-            span.textContent = data.options[i].votes;
-          });
-        }
-        btn.disabled = true; // Disable button after voting
+        document.querySelectorAll('.votes').forEach((span, i) => {
+          span.textContent = `(${data.options[i].votes})`; // Update votes for all users
+        });
+        btn.disabled = true;
       } else {
         const error = await response.json();
         alert(error.error);
