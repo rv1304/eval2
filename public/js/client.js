@@ -1,6 +1,6 @@
-// public/js/client.js
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Client script loaded');
+  const socket = io(); // Connect to Socket.io
 
   document.querySelectorAll('.vote-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -24,9 +24,19 @@ document.addEventListener('DOMContentLoaded', () => {
           span.textContent = `(${data.options[i].votes})`;
         });
         btn.disabled = true;
+        socket.emit('vote', pollId); // Notify server of vote
       } catch (error) {
         alert(error.message || 'An error occurred while voting');
       }
     });
+  });
+
+  // Listen for live updates from other voters
+  socket.on('updatePoll', (data) => {
+    if (data.pollId === window.location.pathname.split('/')[2]) {
+      document.querySelectorAll('.votes').forEach((span, i) => {
+        span.textContent = `(${data.options[i].votes})`;
+      });
+    }
   });
 });
