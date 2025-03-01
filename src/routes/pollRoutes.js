@@ -55,7 +55,7 @@ router.get('/poll/:id', async (req, res) => {
   const qrCode = await QRCode.toDataURL(`${req.protocol}://${req.get('host')}/poll/${poll._id}`);
   const isCreator = req.cookies.creatorId === poll.creatorId;
   const shareUrl = `${req.protocol}://${req.get('host')}/poll/${poll._id}`;
-  const timeLeft = Math.max(0, Math.floor((poll.endTime - Date.now()) / 1000)); // Time left in seconds
+  const timeLeft = Math.max(0, Math.floor((poll.endTime - Date.now()) / 1000));
   res.render('poll', { poll, qrCode, isCreator, shareUrl, timeLeft });
 });
 
@@ -72,15 +72,16 @@ router.post('/poll/:id/vote', async (req, res) => {
     return res.status(400).json({ error: 'Poll has ended' });
   }
 
-  if (poll.voters.includes(voterIp)) {
+  const voters = poll.voters || [];
+  if (voters.includes(voterIp)) {
     return res.status(403).json({ error: 'You have already voted' });
   }
 
   poll.options[optionIndex].votes += 1;
-  poll.voters.push(voterIp);
+  poll.voters = [...voters, voterIp];
   await poll.save();
 
-  res.json({ options: poll.options });
+  res.json({ options: poll.options }); // Always return options for all users
 });
 
 router.get('/poll/:id/export/:format', async (req, res) => {
