@@ -1,0 +1,31 @@
+<%- include('partials/header') %>
+<main class="container">
+    <h1><%= poll.title %></h1>
+    <p>Sentiment: <%= poll.sentiment.score > 0 ? 'Positive' : 'Negative' %></p>
+    <p>Ends: <%= poll.endTime.toLocaleString() %></p>
+    <p>Voting: <%= poll.isAnonymous ? 'Anonymous' : 'Public' %></p>
+    
+    <div class="poll-options">
+        <% poll.options.forEach((opt, i) => { %>
+            <div>
+                <button class="vote-btn" data-index="<%= i %>"><%= opt.text %></button>
+                <% if (isCreator) { %>
+                    (<span class="votes"><%= opt.votes %></span>)
+                <% } %>
+            </div>
+        <% }) %>
+    </div>
+    
+    <div class="poll-share">
+        <img src="<%= qrCode %>" alt="QR Code">
+        <p>Share URL: <input type="text" value="<%= shareUrl %>" readonly></p>
+    </div>
+    
+    <% if (isCreator) { %>
+        <div class="export-buttons">
+            <a href="/poll/<%= poll._id %>/export/csv" class="btn">Export CSV</a>
+            <a href="/poll/<%= poll._id %>/export/pdf" class="btn">Export PDF</a>
+        </div>
+    <% } %>
+</main>
+<%- include('partials/footer') %>
