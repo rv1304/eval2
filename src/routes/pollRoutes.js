@@ -8,7 +8,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-module.exports = (io) => { // Accept io as parameter
+module.exports = (io) => {
   router.get('/', async (req, res) => {
     const polls = await Poll.find().sort({ createdAt: -1 });
     res.render('index', { polls });
@@ -86,7 +86,6 @@ module.exports = (io) => { // Accept io as parameter
     res.json({ options: poll.options });
   });
 
-  // Rest of the routes (export endpoints) remain unchanged
   router.get('/poll/:id/export/:format', async (req, res) => {
     const poll = await Poll.findById(req.params.id);
     if (!poll) {
