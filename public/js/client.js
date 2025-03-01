@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Listen for live updates from other voters
   socket.on('updatePoll', (data) => {
     if (data.pollId === window.location.pathname.split('/')[2]) {
       document.querySelectorAll('.votes').forEach((span, i) => {
