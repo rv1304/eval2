@@ -46,7 +46,7 @@
       setTimeout(updateTimer, 1000);
     }
   }
-  if (timeLeft >= 0) {
+  if (timeLeft > 0) {
     updateTimer();
   } else {
     timerElement.textContent = 'Poll Ended';
@@ -58,21 +58,25 @@
       const index = btn.dataset.index;
       const pollId = window.location.pathname.split('/')[2];
       
-      const response = await fetch(`/poll/${pollId}/vote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ optionIndex: index })
-      });
-      
-      if (response.ok) {
+      try {
+        const response = await fetch(`/poll/${pollId}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ optionIndex: parseInt(index) })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error);
+        }
+
         const data = await response.json();
         document.querySelectorAll('.votes').forEach((span, i) => {
-          span.textContent = `(${data.options[i].votes})`; // Update votes for all users
+          span.textContent = `(${data.options[i].votes})`;
         });
         btn.disabled = true;
-      } else {
-        const error = await response.json();
-        alert(error.error);
+      } catch (error) {
+        alert(error.message || 'An error occurred while voting');
       }
     });
   });
