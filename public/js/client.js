@@ -1,4 +1,3 @@
-const socket = io();
 
 document.querySelectorAll('.vote-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
