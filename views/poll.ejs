@@ -3,6 +3,7 @@
     <h1><%= poll.title %></h1>
     <p>Sentiment: <%= poll.sentiment.score > 0 ? 'Positive' : 'Negative' %></p>
     <p>Ends: <%= poll.endTime.toLocaleString() %></p>
+    <p>Time Left: <span id="timer"></span></p>
     <p>Voting: <%= poll.isAnonymous ? 'Anonymous' : 'Public' %></p>
     
     <div class="poll-options">
@@ -29,3 +30,56 @@
     <% } %>
 </main>
 <%- include('partials/footer') %>
+
+<script>
+  // Countdown timer
+  let timeLeft = <%= timeLeft %>; // Already in seconds from server
+  
+  const timerElement = document.getElementById('timer');
+  
+  function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerElement.textContent = `${minutes}m ${seconds}s`;
+    if (timeLeft <= 0) {
+      timerElement.textContent = 'Poll Ended';
+      document.querySelectorAll('.vote-btn').forEach(btn => btn.disabled = true);
+    } else {
+      timeLeft--;
+      setTimeout(updateTimer, 1000);
+    }
+  }
+  if (timeLeft >= 0) {
+    updateTimer();
+  } else {
+    timerElement.textContent = 'Poll Ended';
+    document.querySelectorAll('.vote-btn').forEach(btn => btn.disabled = true);
+  }
+
+  // Voting functionality
+  document.querySelectorAll('.vote-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const index = btn.dataset.index;
+      const pollId = window.location.pathname.split('/')[2];
+      
+      const response = await fetch(`/poll/${pollId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ optionIndex: index })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (document.querySelector('.votes')) { // Only update if creator
+          document.querySelectorAll('.votes').forEach((span, i) => {
+            span.textContent = data.options[i].votes;
+          });
+        }
+        btn.disabled = true; // Disable button after voting
+      } else {
+        const error = await response.json();
+        alert(error.error);
+      }
+    });
+  });
+</script>
